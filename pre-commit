@@ -1,0 +1,19 @@
+#!/bin/sh
+
+STAGED_JS=($(git status --porcelain | awk ' $1 ~ /[AM]/ && $2 ~ /\.js$/ {print $2;}'))
+
+for JS in "${STAGED_JS[@]}" 
+do
+  git show :$JS > "$JS.tmp"
+  acorn --silent "$JS.tmp"
+  EXIT_VALUE=$?
+  rm "$JS.tmp"
+  if [ $EXIT_VALUE -ne 0 ]
+  then
+    echo "$JS"
+    git show $JS
+    exit $EXIT_VALUE
+  fi
+done
+
+exit 0
